@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Windows Update Prank Simulator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: #141E30;
+      color: white;
+      overflow: hidden;
+    }
+
+    #appContainer {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .content {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Main Home Screen */
+    #introScreen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #141E30, #243B55);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #introTitle {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    #introTagline {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 40px;
+      max-width: 700px;
+    }
+
+    .cardContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 25px;
+      width: 90%;
+      max-width: 900px;
+      margin-bottom: 20px;
+    }
+
+    .modeCard {
+      background: #1f2c47;
+      border: 2px solid #0078D7;
+      border-radius: 12px;
+      padding: 25px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .modeCard:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.7);
+      background: #263d66;
+    }
+
+    .modeCard h2 { font-size: 20px; margin-bottom: 8px; }
+    .modeCard p { font-size: 14px; opacity: 0.8; }
+
+    #info { 
+      font-size: 13px; 
+      opacity: 0.7; 
+      margin-top: 10px; 
+    }
+
+    footer {
+      background: #0d1420;
+      padding: 15px;
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.8;
+      flex-shrink: 0;
+    }
+    footer .disclaimer {
+      font-size: 12px;
+      margin-top: 8px;
+      opacity: 0.6;
+    }
+
+    /* Other screens stay absolute stacked on top */
+    .screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #updateScreen {
+      background-color: #0078D7;
+    }
+
+    .spinner {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 30px;
+    }
+
+    .dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: white;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      margin: -4px 0 0 -4px;
+      opacity: 0;
+      animation: fade 1.2s linear infinite;
+    }
+
+    .dot:nth-child(1)  { transform: translate(0, -30px); animation-delay: 0s; }
+    .dot:nth-child(2)  { transform: translate(15px, -26px); animation-delay: 0.1s; }
+    .dot:nth-child(3)  { transform: translate(26px, -15px); animation-delay: 0.2s; }
+    .dot:nth-child(4)  { transform: translate(30px, 0); animation-delay: 0.3s; }
+    .dot:nth-child(5)  { transform: translate(26px, 15px); animation-delay: 0.4s; }
+    .dot:nth-child(6)  { transform: translate(15px, 26px); animation-delay: 0.5s; }
+    .dot:nth-child(7)  { transform: translate(0, 30px); animation-delay: 0.6s; }
+    .dot:nth-child(8)  { transform: translate(-15px, 26px); animation-delay: 0.7s; }
+    .dot:nth-child(9)  { transform: translate(-26px, 15px); animation-delay: 0.8s; }
+    .dot:nth-child(10) { transform: translate(-30px, 0); animation-delay: 0.9s; }
+    .dot:nth-child(11) { transform: translate(-26px, -15px); animation-delay: 1.0s; }
+    .dot:nth-child(12) { transform: translate(-15px, -26px); animation-delay: 1.1s; }
+
+    @keyframes fade {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    h1 { font-weight: 400; font-size: 22px; margin-bottom: 20px; }
+    #progress { font-size: 36px; font-weight: 300; margin-bottom: 30px; }
+    #footer { font-size: 16px; opacity: 0.8; }
+
+    #bsodScreen {
+      background-color: #0000AA;
+      font-family: "Consolas", monospace;
+      padding: 60px;
+      align-items: flex-start;
+    }
+
+    .bsodFace { font-size: 100px; margin-bottom: 30px; line-height: 100px; }
+    .bsodText { font-size: 24px; line-height: 1.7; margin-bottom: 10px; }
+  </style>
+</head>
+
+<body>
+  <div id="appContainer">
+    <div class="content">
+      <!-- Home Screen -->
+      <div id="introScreen">
+        <div id="introTitle">Windows Update Prank Simulator</div>
+        <div id="introTagline">
+          Create hyper-realistic fake Windows update screens to harmlessly prank your friends.
+        </div>
+
+        <div class="cardContainer">
+          <div class="modeCard" onclick="startMode('normal')">
+            <h2>Normal Update</h2>
+            <p>Simulate a full Windows update process.</p>
+          </div>
+          <div class="modeCard" onclick="startMode('stuck')">
+            <h2>99% Stuck Mode</h2>
+            <p>Get stuck forever at 99% for maximum suspense.</p>
+          </div>
+          <div class="modeCard" onclick="startMode('panic')">
+            <h2>Inverted Panic</h2>
+            <p>Simulate a failed update with rollback.</p>
+          </div>
+          <div class="modeCard" onclick="startMode('bsod')">
+            <h2>Critical Error</h2>
+            <p>Display a realistic BSOD error screen.</p>
+          </div>
+        </div>
+
+        <div id="info">Press F11 for fullscreen. Press Ctrl + Enter anytime to exit prank mode.</div>
+      </div>
+
+      <!-- Fake update screens -->
+      <div id="updateScreen" class="screen">
+        <div class="spinner">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <h1 id="mainText">Working on updates</h1>
+        <div id="progress">0%</div>
+        <div id="footer">Don't turn off your computer. This will take a while.</div>
+      </div>
+
+      <div id="bsodScreen" class="screen">
+        <div class="bsodFace">:(</div>
+        <div class="bsodText">Your PC ran into a problem and needs to restart.</div>
+        <div class="bsodText">We're just collecting some error info, and then we'll restart for you.</div>
+        <div class="bsodText"><br>Stop Code: <b>CRITICAL_PROCESS_DIED</b></div>
+      </div>
+    </div>
+
+    <footer>
+      © 2025 Karthik Nambiar<br>
+      <div class="disclaimer">
+        Disclaimer: This tool is purely for harmless pranking. Do not use in professional or public settings where it may cause panic or confusion.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    let mode = "normal";
+    let currentProgress = 0;
+    let interval;
+
+    function hideAllScreens() {
+      document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+      document.querySelector('footer').style.display = 'none';
+    }
+
+    function startMode(selectedMode) {
+      mode = selectedMode;
+      clearInterval(interval);
+      currentProgress = 0;
+      hideAllScreens();
+
+      if (mode === "bsod") {
+        document.getElementById("bsodScreen").style.display = "flex";
+        return;
+      }
+
+      document.getElementById("mainText").innerText = "Working on updates";
+      document.getElementById("progress").innerText = "0%";
+      document.getElementById("updateScreen").style.display = "flex";
+      simulateProgress();
+    }
+
+    function simulateProgress() {
+      interval = setInterval(() => {
+        let increment = (currentProgress < 80) ? Math.random() * 2 + 1 :
+                        (currentProgress < 98) ? Math.random() * 0.5 + 0.2 : 
+                        Math.random() * 0.05;
+
+        currentProgress += increment;
+
+        if (mode === "stuck" && currentProgress >= 99) {
+          currentProgress = 99;
+          document.getElementById("mainText").innerText = "Finalizing updates...";
+          clearInterval(interval);
+        }
+
+        if (currentProgress >= 100) {
+          currentProgress = 100;
+          clearInterval(interval);
+          if (mode === "panic") {
+            document.getElementById("mainText").innerText = "Update failed. Rolling back changes...";
+            rollback();
+          } else {
+            setTimeout(() => { document.getElementById("progress").innerText = "Restarting..."; }, 1000);
+          }
+        }
+
+        if (currentProgress < 100) {
+          document.getElementById("progress").innerText = `${currentProgress.toFixed(1)}%`;
+        }
+      }, 500);
+    }
+
+    function rollback() {
+      let rollbackProgress = 100;
+      let rollbackInterval = setInterval(() => {
+        rollbackProgress -= Math.random() * 1;
+        if (rollbackProgress <= 0) {
+          rollbackProgress = 0;
+          clearInterval(rollbackInterval);
+        }
+        document.getElementById("progress").innerText = `Rolling back... ${rollbackProgress.toFixed(1)}%`;
+      }, 300);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "Enter") {
+        resetAll();
+      }
+    });
+
+    function resetAll() {
+      clearInterval(interval);
+      currentProgress = 0;
+      document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+      document.getElementById("introScreen").style.display = "flex";
+      document.querySelector('footer').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
